@@ -1,7 +1,10 @@
+import threading
+
 class obj:
-    def __init__(self, x, y, friction=0.0):
+    def __init__(self, x, y, width=36, friction=0.0):
         self.x = x
         self.y = y
+        self.width = width
         self.vx = 0
         self.vy = 0
         self.friction = friction
@@ -14,10 +17,26 @@ class obj:
         self.vy *= 1.0-self.friction
 
         self.x = self.x % 360
+    
+    def x_overlap(self,object:"obj"):
+        selfleft = self.x-(self.width/2)
+        selfright = self.x+(self.width/2)
+        targetleft = object.x-(object.width/2)
+        targetright = object.x+(object.width/2)
+
+        if targetleft < selfleft < targetright:
+            return True
+        elif targetright > selfright > targetleft:
+            return True
+
+        return False
+
 
 class wall(obj):
-    def physic(self):
-        self.y += 5
+    pass
+
+class coin(obj):
+    pass
 
 class player(obj):
     pass
