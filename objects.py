@@ -1,7 +1,5 @@
-import threading
-
 class obj:
-    def __init__(self, x, y, width=36, friction=0.0):
+    def __init__(self, x, y, width=20, friction=0.0):
         self.x = x
         self.y = y
         self.width = width
@@ -18,18 +16,10 @@ class obj:
 
         self.x = self.x % 360
     
-    def x_overlap(self,object:"obj"):
-        selfleft = self.x-(self.width/2)
-        selfright = self.x+(self.width/2)
-        targetleft = object.x-(object.width/2)
-        targetright = object.x+(object.width/2)
+    def x_overlap(self, other:"obj"):
+        return not (self.x + self.width/2 < other.x - other.width/2 or
+                    self.x - self.width/2 > other.x + other.width/2)
 
-        if targetleft < selfleft < targetright:
-            return True
-        elif targetright > selfright > targetleft:
-            return True
-
-        return False
 
 
 class wall(obj):

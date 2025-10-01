@@ -9,28 +9,33 @@ class Game:
         self.screenheight = scrHeight
         self.degToPos = self.screenwidth/360
 
-        self.alive = True
+        self.playerImg = pygame.image.load("sprites/player.png")
+        self.wallImg = pygame.image.load("sprites/wall.png")
 
         self.timeToGen = 0
         self.genTime = (45,90)
 
     def start(self):
-        self.player = player(180,500,friction=0.1)
+        self.player = player(180,550,friction=0.15)
         self.relx = self.player.x
+        self.alive = True
+        self.objects = []
+
+        self.timeToGen = 0
 
         self.objects.append(self.player)
 
         return
 
     def wall_gen(self):
-        start = random.randint(0,360//36)
-        length = random.randint(2,8)
+        start = random.randint(0,360//20)
+        length = random.randint(2,14)
 
         for i in range(length):
-            x = ((i+start)*36) % 360
+            x = ((i+start)*20) % 360
             y = -72
             wallter = wall(x,y)
-            wallter.vy = 7
+            wallter.vy = 8
             self.objects.append(wallter)
 
 
@@ -42,7 +47,7 @@ class Game:
             self.timeToGen -= 1
 
 
-        MAX_SPEED = 7
+        MAX_SPEED = 10
         ACCEL = MAX_SPEED/15
 
         keys = pygame.key.get_pressed()
@@ -51,12 +56,10 @@ class Game:
         if keys[pygame.K_d] and self.player.vx > -MAX_SPEED:
             self.player.vx += ACCEL
 
+        self.objects = [obj for obj in self.objects if obj.y <= self.screenheight or isinstance(obj, player)]
         for object in self.objects:
             object.physic()
-
-            if object.y > self.screenheight:
-                self.objects.remove(object)
-        playery = self.player.y - 72
+        playery = self.player.y - 40
         for Wall in [object for object in self.objects if isinstance(object,wall)]:
             if Wall.y > playery:
                 self.alive = not Wall.x_overlap(self.player)
@@ -66,19 +69,19 @@ class Game:
         return
 
     def render(self, screen:pygame.Surface):
-        self.relx += ((self.player.x - self.relx + 540) % 360 - 180)/3
+        self.relx += ((self.player.x - self.relx + 540) % 360 - 180)/5
 
         for object in self.objects:
             if not isinstance(object,obj):
                 continue
-            width = object.width*self.degToPos
-            height = 72
+            width = object.width*self.degToPos*1.05 # make it slightly larger than its true width, reduce failed tiling
+            height = 40
             x = ((object.x-self.relx+180)% 360) * self.degToPos - width//2
             y = object.y - height/2
             if isinstance(object,player):
-                surf = pygame.image.load("sprites/player.png")
+                surf = self.playerImg
             if isinstance(object, wall):
-                surf = pygame.image.load("sprites/wall.png")
+                surf = self.wallImg
             surf = pygame.transform.scale(surf,(width, height))
             screen.blit(surf,dest=(x,y))
         return
@@ -90,20 +93,17 @@ class GameOverScreen:
         if pygame.key.get_pressed()[pygame.K_r]:
             global game
             global scene
-            global WIDTH
-            global HEIGHT
-            game = Game(WIDTH,HEIGHT)
             scene = game
             game.start()
 
     def render(self,screen:pygame.Surface):
-        deathFont = pygame.Font("Helvetica.ttf",size=screen.width//8)
+        deathFont = pygame.Font("Helvetica.ttf",size=screen.get_width()//8)
         deathLabel = deathFont.render("YOU DIED",True,pygame.Color(255,255,255))
         screen.blit(deathLabel, dest=(screen.width//2-(deathLabel.width//2),50))
 
         respawnFont = pygame.Font("Helvetica.ttf",size=20)
         respawnLabel = respawnFont.render("Press R to retry",True,pygame.Color(0,255,255))
-        screen.blit(respawnLabel, dest=(screen.width//2-(respawnLabel.width//2),150))
+        screen.blit(respawnLabel, dest=(screen.get_width()//2-(respawnLabel.width//2),150))
 
 
 if __name__ == "__main__":
