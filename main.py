@@ -1,6 +1,7 @@
 from objects import *
 import pygame
 import random
+import math
 
 class Game:
     def __init__(self, scrWidth, scrHeight):
@@ -88,7 +89,10 @@ class Game:
 
 class GameOverScreen:
     def __init__(self):
-        pass
+        respawnFont = pygame.Font("Helvetica.ttf",size=20)
+        self.respawnLabel = respawnFont.render("Press R to retry",True,pygame.Color(0,255,255))
+        deathFont = pygame.Font("Helvetica.ttf",size=screen.get_width()//8)
+        self.deathLabel = deathFont.render("YOU DIED",True,pygame.Color(255,255,255))
     def update(self):
         if pygame.key.get_pressed()[pygame.K_r]:
             global game
@@ -97,13 +101,8 @@ class GameOverScreen:
             game.start()
 
     def render(self,screen:pygame.Surface):
-        deathFont = pygame.Font("Helvetica.ttf",size=screen.get_width()//8)
-        deathLabel = deathFont.render("YOU DIED",True,pygame.Color(255,255,255))
-        screen.blit(deathLabel, dest=(screen.width//2-(deathLabel.width//2),50))
-
-        respawnFont = pygame.Font("Helvetica.ttf",size=20)
-        respawnLabel = respawnFont.render("Press R to retry",True,pygame.Color(0,255,255))
-        screen.blit(respawnLabel, dest=(screen.get_width()//2-(respawnLabel.width//2),150))
+        screen.blit(self.deathLabel, dest=(screen.width//2-(self.deathLabel.width//2),50))
+        screen.blit(self.respawnLabel, dest=(screen.get_width()//2-(self.respawnLabel.width//2),150))
 
 
 if __name__ == "__main__":
@@ -120,7 +119,7 @@ if __name__ == "__main__":
     dbg_active = True
     def dbg_render():
         screen.blit(
-            dbgtxt.render("FPS: "+str(clock.get_fps()),False,pygame.Color(0,255,0)),
+            dbgtxt.render(f"{"="*int(((clock.get_fps()**2)-3000)/72)}>{clock.get_fps():2.2f} FPS",False,pygame.Color(0,255,0)),
             dest=(16,16)
         )
         screen.blit(
@@ -146,6 +145,9 @@ if __name__ == "__main__":
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_F3:
                     dbg_active = not dbg_active
+        
+        if pygame.key.get_pressed()[pygame.K_F1]: # yes it's meant to be held; for the wall of death
+            game.wall_gen()
 
         scene.update()
         if scene == game and not game.alive:
